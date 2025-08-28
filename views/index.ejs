@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>splatbin - File Upload</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #000000;
+            color: #cba6f7;
+            height: 100vh;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 48px;
+            line-height: 1;
+        }
+        .logo-text {
+            font-size: 32px;
+            font-weight: 600;
+            color: #cba6f7;
+            margin: 0;
+        }
+        .container {
+            background: #111111;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            border: 1px solid #333333;
+        }
+
+        .container h3 {
+            color: #cba6f7;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+        
+        /* Unified Form Layout */
+        .unified-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Settings Row (top, small, side by side) */
+        .settings-row {
+            display: flex;
+            gap: 20px;
+        }
+        .setting-item {
+            flex: 1;
+        }
+        .setting-item label {
+            display: block;
+            color: #cba6f7;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .setting-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #444444;
+            border-radius: 6px;
+            background: #000000;
+            color: #cba6f7;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .setting-input::placeholder {
+            color: #888888;
+        }
+        .setting-input:focus {
+            outline: none;
+            border-color: #cba6f7;
+        }
+        
+        /* Content Area (large text box) */
+        .content-area {
+            display: flex;
+            flex-direction: column;
+        }
+        .content-area label {
+            color: #cba6f7;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .content-textarea {
+            width: 100%;
+            min-height: 140px;
+            padding: 15px;
+            border: 1px solid #444444;
+            border-radius: 8px;
+            background: #000000;
+            color: #cba6f7;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .content-textarea::placeholder {
+            color: #888888;
+        }
+        .content-textarea:focus {
+            outline: none;
+            border-color: #cba6f7;
+        }
+        
+        /* Bottom Row: Attachment (left) + Save Button (right) */
+        .bottom-row {
+            display: flex;
+            gap: 20px;
+            align-items: end;
+        }
+        .attachment-area {
+            flex: 1;
+        }
+        .save-area {
+            flex-shrink: 0;
+        }
+        
+        /* File Attachment */
+        .file-attach-wrapper {
+            position: relative;
+        }
+        .file-input-hidden {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-display {
+            border: 2px dashed #444444;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: #000000;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .file-display:hover {
+            border-color: #cba6f7;
+            background: #111111;
+        }
+        .attach-text {
+            color: #888888;
+            font-size: 14px;
+        }
+        .file-selected {
+            border-color: #cba6f7;
+            background: #111111;
+        }
+        .file-selected .attach-text {
+            color: #cba6f7;
+        }
+        
+        /* Cancel File Button */
+        .cancel-file-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #cba6f7;
+            color: #000000;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            line-height: 1;
+        }
+        .cancel-file-btn:hover {
+            background: #b794f6;
+            transform: scale(1.1);
+        }
+        
+        /* Save Button - Bright */
+        .save-btn {
+            background: #cba6f7;
+            border: 1px solid #cba6f7;
+            color: #000000;
+            padding: 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-width: 120px;
+            height: 62px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(203, 166, 247, 0.3);
+        }
+        .save-btn:hover {
+            background: #b794f6;
+            border-color: #b794f6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(203, 166, 247, 0.4);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">🫟</div>
+        <h1 class="logo-text">splatbin</h1>
+    </div>
+    
+    <div class="container">
+        <h3>Upload</h3>
+        
+        <form action="/upload" method="post" enctype="multipart/form-data" class="unified-form">
+                <!-- Settings Row -->
+                <div class="settings-row">
+                    <div class="setting-item">
+                        <label for="custom_name">Filename:</label>
+                        <input type="text" name="custom_name" id="custom_name" placeholder="my-file.txt" class="setting-input">
+                    </div>
+                    <div class="setting-item">
+                        <label for="expires_hours">Expires (hours):</label>
+                        <input type="number" name="expires_hours" id="expires_hours" placeholder="24" min="1" max="<%= config.expiry.max_hours === -1 ? 8760 : config.expiry.max_hours %>" class="setting-input">
+                    </div>
+                </div>
+                
+                <!-- Content Area -->
+                <div class="content-area">
+                    <label for="text_content">Content:</label>
+                    <textarea name="text_content" id="text_content" placeholder="Type or paste your text content here..." class="content-textarea"></textarea>
+                </div>
+                
+                <!-- Bottom Row: Attachment + Save Button -->
+                <div class="bottom-row">
+                    <div class="attachment-area">
+                        <div class="file-attach-wrapper" id="file-wrapper">
+                            <input type="file" name="file" id="file-input" class="file-input-hidden">
+                            <div class="file-display" id="file-display">
+                                <span class="attach-text" id="attach-text">📎 Attach file</span>
+                                <button type="button" class="cancel-file-btn" id="cancel-file-btn" style="display: none;">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="save-area">
+                        <button type="submit" class="save-btn">Save</button>
+                    </div>
+                </div>
+        </form>
+    </div>
+    
+    <script>
+        // File input handling and drag & drop
+        const fileInput = document.getElementById('file-input');
+        const fileDisplay = document.getElementById('file-display');
+        const attachText = document.getElementById('attach-text');
+        const cancelBtn = document.getElementById('cancel-file-btn');
+        const textArea = document.getElementById('text_content');
+        let originalTextContent = '';
+
+        function selectFile(file) {
+            // Store original text content before clearing
+            if (textArea.value && !originalTextContent) {
+                originalTextContent = textArea.value;
+            }
+            
+            // Clear text area and show file message
+            textArea.value = '';
+            textArea.placeholder = `File "${file.name}" will be uploaded (text content cleared)`;
+            textArea.disabled = true;
+            
+            // Update display
+            attachText.textContent = `📎 ${file.name}`;
+            fileDisplay.classList.add('file-selected');
+            cancelBtn.style.display = 'flex';
+        }
+
+        function clearFile() {
+            // Clear file input
+            fileInput.value = '';
+            
+            // Restore original text content
+            if (originalTextContent) {
+                textArea.value = originalTextContent;
+                originalTextContent = '';
+            }
+            textArea.placeholder = 'Type or paste your text content here...';
+            textArea.disabled = false;
+            
+            // Reset display
+            attachText.textContent = '📎 Attach file';
+            fileDisplay.classList.remove('file-selected');
+            cancelBtn.style.display = 'none';
+        }
+
+        // Handle file selection via click
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                selectFile(this.files[0]);
+            } else {
+                clearFile();
+            }
+        });
+
+        // Cancel file button
+        cancelBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            clearFile();
+        });
+
+        // Click to select file
+        fileDisplay.addEventListener('click', function(e) {
+            if (!e.target.classList.contains('cancel-file-btn')) {
+                fileInput.click();
+            }
+        });
+        
+        // Drag and drop functionality
+        fileDisplay.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#cba6f7';
+            this.style.backgroundColor = '#111111';
+        });
+        
+        fileDisplay.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            if (!this.classList.contains('file-selected')) {
+                this.style.borderColor = '#444444';
+                this.style.backgroundColor = '#000000';
+            }
+        });
+        
+        fileDisplay.addEventListener('drop', function(e) {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                selectFile(files[0]);
+            }
+            // Reset drag styles
+            this.style.borderColor = '';
+            this.style.backgroundColor = '';
+        });
+    </script>
+</body>
+</html>

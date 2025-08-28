@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= file.original_name %> - splatbin</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #000000;
+            color: #cba6f7;
+            min-height: 100vh;
+        }
+        .top-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 40px;
+            background: #000000;
+            border-bottom: 1px solid #333333;
+        }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: inherit;
+        }
+        .header-logo:hover .logo-text {
+            color: #f5c2e7;
+        }
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-right {
+            width: 150px;
+        }
+        .logo {
+            font-size: 32px;
+            line-height: 1;
+        }
+        .logo-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: #cba6f7;
+            margin: 0;
+            transition: color 0.2s ease;
+        }
+        .item-id {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            color: #cba6f7;
+            background: #222222;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        .copy-btn {
+            background: #cba6f7;
+            color: #000000;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .copy-btn:hover {
+            background: #f5c2e7;
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .header {
+            background: #111111;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            margin-bottom: 20px;
+            border: 1px solid #333333;
+        }
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .file-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #cba6f7;
+        }
+        .file-meta {
+            color: #888888;
+            font-size: 14px;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: #cba6f7;
+            color: #000000;
+        }
+        .btn-secondary {
+            background: #444444;
+            color: #cba6f7;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        .content-container {
+            background: #111111;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+            overflow: hidden;
+            border: 1px solid #333333;
+        }
+        .content {
+            padding: 0;
+            margin: 0;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            background: #000000;
+            border: none;
+            color: #cba6f7;
+        }
+        .line-numbers {
+            background: #222222;
+            color: #888888;
+            padding: 20px 10px;
+            text-align: right;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            user-select: none;
+            border-right: 1px solid #333333;
+            min-width: 50px;
+        }
+        .content-wrapper {
+            display: flex;
+        }
+        .content-text {
+            padding: 20px;
+            flex: 1;
+            overflow-x: auto;
+        }
+        .home-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .home-link a {
+            color: #cba6f7;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .home-link a:hover {
+            color: #f5c2e7;
+            text-decoration: underline;
+        }
+        .download-commands {
+            margin: 20px 0;
+            padding: 25px;
+            background: #222222;
+            border-radius: 12px;
+            border: 1px solid #333333;
+        }
+        .download-commands h3 {
+            color: #cba6f7;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        .command-group {
+            margin-bottom: 20px;
+        }
+        .command-group:last-child {
+            margin-bottom: 0;
+        }
+        .command-group h4 {
+            color: #cba6f7;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .command-group pre {
+            background: #000000;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #333333;
+            overflow-x: auto;
+            margin: 0;
+        }
+        .command-group code {
+            color: #cba6f7;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header with SplatBin -->
+    <div class="top-header">
+        <a href="/" class="header-logo">
+            <div class="logo">🫟</div>
+            <h1 class="logo-text">splatbin</h1>
+        </a>
+        <div class="header-center">
+            <span class="item-id"><%= id %></span>
+            <button onclick="copyLink()" class="copy-btn" id="copy-btn">Copy Link</button>
+        </div>
+        <div class="header-right"></div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-container">
+        <div class="header">
+            <div class="file-info">
+                <div>
+                    <div class="file-name"><%= file.original_name %></div>
+                    <div class="file-meta">
+                        Size: <%= (file.file_size / 1024).toFixed(1) %>KB<% if (file.expires_at) { %> | 
+                        Expires: <%= new Date(file.expires_at).toLocaleString() %><% } %>
+                    </div>
+                </div>
+                <div class="actions">
+                    <a href="/raw/<%= id %>" class="btn btn-primary">Raw</a>
+                    <a href="/download/<%= id %>" class="btn btn-secondary">Download</a>
+                </div>
+            </div>
+        </div>
+    
+    <div class="content-container">
+        <div class="content-wrapper">
+            <div class="line-numbers"><%
+                const lines = content.split('\n');
+                for (let i = 1; i <= lines.length; i++) {
+            %><%= i %><br><%
+                }
+            %></div>
+            <div class="content-text"><%- content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') %></div>
+        </div>
+    </div>
+    
+        <div class="download-commands">
+            <h3>Download Command</h3>
+            <div class="command-group">
+                <pre><code>curl -O <%= req ? `${req.protocol}://${req.get('host')}` : '' %>/download/<%= id %></code></pre>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyLink() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#f5c2e7';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#cba6f7';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

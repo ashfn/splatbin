@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  splatbin:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data/uploads:/app/uploads
+      - ./data/splatbin.db:/app/splatbin.db
+      - ./config.toml:/app/config.toml
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  data:
