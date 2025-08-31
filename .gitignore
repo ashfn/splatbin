@@ -2,3 +2,5 @@ node_modules/
 uploads
 splatbin.db
 deployment/
+.DS_Store
+.env
