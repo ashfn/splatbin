@@ -14,7 +14,7 @@
             color: #cba6f7;
             min-height: 100vh;
         }
-        .header {
+        .top-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -73,7 +73,7 @@
         .copy-btn:hover {
             background: #f5c2e7;
         }
-        .container {
+        .main-container {
             max-width: 800px;
             margin: 0 auto;
             padding: 40px 20px;
@@ -204,11 +204,68 @@
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             font-size: 13px;
         }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .top-header {
+                padding: 15px 20px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .header-logo {
+                order: -1;
+                flex: 0 0 auto;
+                gap: 8px;
+            }
+            .logo {
+                font-size: 24px;
+            }
+            .logo-text {
+                font-size: 18px;
+            }
+            .header-center {
+                flex: 1;
+                justify-content: center;
+                gap: 10px;
+            }
+            .header-right {
+                width: auto;
+                flex: 0 0 auto;
+            }
+            .item-id {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+            .copy-btn {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .top-header {
+                padding: 10px 15px;
+            }
+            .header-center {
+                gap: 8px; /* Keep elements on same line, just reduce gap */
+            }
+            .logo-text {
+                display: none; /* Hide text on very small screens */
+            }
+            .item-id {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
+            .copy-btn {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Top Header with SplatBin -->
-    <div class="header">
+    <div class="top-header">
         <a href="/" class="header-logo">
             <div class="logo">🫟</div>
             <h1 class="logo-text">splatbin</h1>
@@ -221,7 +278,7 @@
     </div>
     
     <!-- Main Content -->
-    <div class="container">
+    <div class="main-container">
         <div class="file-info-center">
             <div class="file-name"><%= file.original_name %></div>
             
