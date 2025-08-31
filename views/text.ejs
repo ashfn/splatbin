@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= file.original_name %> - splatbin</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -132,6 +133,83 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.8);
             overflow: hidden;
             border: 1px solid #333333;
+            position: relative;
+        }
+        .copy-text-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #cba6f7;
+            color: #000000;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        .copy-text-btn:hover {
+            background: #f5c2e7;
+        }
+        
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .top-header {
+                padding: 15px 20px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .header-logo {
+                order: -1;
+                flex: 0 0 auto;
+                gap: 8px;
+            }
+            .logo {
+                font-size: 24px;
+            }
+            .logo-text {
+                font-size: 18px;
+            }
+            .header-center {
+                flex: 1;
+                justify-content: center;
+                gap: 10px;
+            }
+            .header-right {
+                width: auto;
+                flex: 0 0 auto;
+            }
+            .item-id {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+            .copy-btn {
+                font-size: 12px;
+                padding: 4px 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .top-header {
+                padding: 10px 15px;
+            }
+            .header-center {
+                gap: 8px; /* Keep elements on same line, just reduce gap */
+            }
+            .logo-text {
+                display: none; /* Hide text on very small screens */
+            }
+            .item-id {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
+            .copy-btn {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
         }
         .content {
             padding: 0;
@@ -145,25 +223,104 @@
             border: none;
             color: #cba6f7;
         }
-        .line-numbers {
+        /* Dynamic line number width based on content */
+        .line-number.narrow {
+            min-width: 25px;
+            padding: 0 4px;
+        }
+        .line-number.medium {
+            min-width: 32px;
+            padding: 0 6px;
+        }
+        .line-number.wide {
+            min-width: 42px;
+            padding: 0 8px;
+        }
+        .line-number.extra-wide {
+            min-width: 52px;
+            padding: 0 10px;
+        }
+        .content-wrapper {
+            display: flex;
+            position: relative;
+        }
+        .content-lines {
+            flex: 1;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            color: #cba6f7;
+            position: relative;
+        }
+        .content-lines::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 33px; /* Default for narrow */
+            width: 1px;
+            background: #333333;
+            z-index: 1;
+        }
+        .content-lines.medium::before {
+            left: 44px;
+        }
+        .content-lines.wide::before {
+            left: 58px;
+        }
+        .content-lines.extra-wide::before {
+            left: 72px;
+        }
+        .line-container {
+            display: flex;
+            align-items: stretch;
+            min-height: 1.5em;
+        }
+        .line-container.narrow {
+            background: linear-gradient(to right, #222222 33px, #000000 33px);
+        }
+        .line-container.medium {
+            background: linear-gradient(to right, #222222 44px, #000000 44px);
+        }
+        .line-container.wide {
+            background: linear-gradient(to right, #222222 58px, #000000 58px);
+        }
+        .line-container.extra-wide {
+            background: linear-gradient(to right, #222222 72px, #000000 72px);
+        }
+        .line-container:first-child {
+            padding-top: 20px;
+        }
+        .line-container:last-child {
+            padding-bottom: 20px;
+        }
+        .line-container .line-number {
+            flex-shrink: 0;
+            text-align: right;
             background: #222222;
             color: #888888;
-            padding: 20px 10px;
-            text-align: right;
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
             font-size: 14px;
             line-height: 1.5;
             user-select: none;
-            border-right: 1px solid #333333;
-            min-width: 50px;
-        }
-        .content-wrapper {
+            padding-top: 0;
+            align-self: stretch;
             display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
         }
-        .content-text {
-            padding: 20px;
+        .line-container .content-line {
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            margin: 0;
+            padding: 0 20px;
             flex: 1;
-            overflow-x: auto;
+        }
+        .line-container .content-line:empty::before {
+            content: " ";
+            white-space: pre;
         }
         .home-link {
             text-align: center;
@@ -179,10 +336,10 @@
             text-decoration: underline;
         }
         .download-commands {
-            margin: 20px 0;
-            padding: 25px;
+            margin: 30px 0;
+            padding: 10px 20px 20px 20px;
             background: #222222;
-            border-radius: 12px;
+            border-radius: 8px;
             border: 1px solid #333333;
         }
         .download-commands h3 {
@@ -238,8 +395,8 @@
                 <div>
                     <div class="file-name"><%= file.original_name %></div>
                     <div class="file-meta">
-                        Size: <%= (file.file_size / 1024).toFixed(1) %>KB<% if (file.expires_at) { %> | 
-                        Expires: <%= new Date(file.expires_at).toLocaleString() %><% } %>
+                        Size: <%= (file.file_size / 1024).toFixed(1) %>KB<% if (file.expires_at) { %> 
+                        Expires: <span id="expires-display" title="" style="cursor: help;"><%= new Date(file.expires_at).toLocaleString() %></span><% } %>
                     </div>
                 </div>
                 <div class="actions">
@@ -250,14 +407,28 @@
         </div>
     
     <div class="content-container">
+        <button onclick="copyTextContent()" class="copy-text-btn" id="copy-text-btn">Copy Text</button>
         <div class="content-wrapper">
-            <div class="line-numbers"><%
+            <%
                 const lines = content.split('\n');
-                for (let i = 1; i <= lines.length; i++) {
-            %><%= i %><br><%
+                const lineCount = lines.length;
+                let lineNumberClass = 'narrow';
+                if (lineCount >= 1000) {
+                    lineNumberClass = 'extra-wide';
+                } else if (lineCount >= 100) {
+                    lineNumberClass = 'wide';
+                } else if (lineCount >= 10) {
+                    lineNumberClass = 'medium';
                 }
-            %></div>
-            <div class="content-text"><%- content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') %></div>
+            %>
+            <div class="content-lines <%= lineNumberClass %>">
+                <% for (let i = 0; i < lines.length; i++) { %>
+                <div class="line-container <%= lineNumberClass %>">
+                    <div class="line-number <%= lineNumberClass %>"><%= i + 1 %></div>
+                    <div class="content-line"><%- lines[i].replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') %></div>
+                </div>
+                <% } %>
+            </div>
         </div>
     </div>
     
@@ -274,6 +445,85 @@
             const url = window.location.href;
             navigator.clipboard.writeText(url).then(() => {
                 const btn = document.getElementById('copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#f5c2e7';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#cba6f7';
+                }, 2000);
+            });
+        }
+        
+        function updateExpiresIn() {
+            <% if (file.expires_at) { %>
+            const expiresAt = new Date('<%= file.expires_at %>');
+            const now = new Date();
+            const diff = expiresAt - now;
+            
+            const expiresDisplayElement = document.getElementById('expires-display');
+            if (!expiresDisplayElement) return;
+            
+            if (diff <= 0) {
+                expiresDisplayElement.title = 'Expired';
+                expiresDisplayElement.style.color = '#f38ba8'; // Red color
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            let timeString = '';
+            if (days > 0) {
+                timeString += `${days} day${days > 1 ? 's' : ''} `;
+            }
+            if (hours > 0) {
+                timeString += `${hours}h `;
+            }
+            if (minutes > 0 || (hours > 0 && days === 0)) {
+                timeString += `${minutes}m `;
+            }
+            if (days === 0 && hours === 0 && minutes < 10) {
+                timeString += `${seconds}s`;
+            }
+            
+            expiresDisplayElement.title = `${timeString.trim()} remaining`;
+            <% } %>
+        }
+        
+        // Update expires in countdown every second
+        <% if (file.expires_at) { %>
+        updateExpiresIn();
+        setInterval(updateExpiresIn, 1000);
+        <% } %>
+        
+        function copyTextContent() {
+            // Get the raw text content from the content-lines div
+            const contentLines = document.querySelectorAll('.content-line');
+            const textContent = Array.from(contentLines).map(line => line.textContent || line.innerText).join('\n');
+            
+            navigator.clipboard.writeText(textContent).then(() => {
+                const btn = document.getElementById('copy-text-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#f5c2e7';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#cba6f7';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = textContent;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const btn = document.getElementById('copy-text-btn');
                 const originalText = btn.textContent;
                 btn.textContent = 'Copied!';
                 btn.style.background = '#f5c2e7';

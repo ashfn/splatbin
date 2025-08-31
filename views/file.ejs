@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= file.original_name %> - splatbin</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -168,7 +169,7 @@
         }
         .download-commands {
             margin: 30px 0;
-            padding: 25px;
+            padding: 10px 20px 20px 20px;
             background: #222222;
             border-radius: 8px;
             border: 1px solid #333333;
@@ -228,7 +229,7 @@
                 <div><strong>Size:</strong> <%= (file.file_size / 1024 / 1024).toFixed(2) %>MB</div>
                 <div><strong>Type:</strong> <%= file.content_type %></div>
                 <% if (file.expires_at) { %>
-                <div><strong>Expires:</strong> <%= new Date(file.expires_at).toLocaleString() %></div>
+                <div><strong>Expires:</strong> <span id="expires-display" title="" style="cursor: help;"><%= new Date(file.expires_at).toLocaleString() %></span></div>
                 <% } %>
             </div>
             
@@ -261,6 +262,49 @@
             });
         }
         
+        function updateExpiresIn() {
+            <% if (file.expires_at) { %>
+            const expiresAt = new Date('<%= file.expires_at %>');
+            const now = new Date();
+            const diff = expiresAt - now;
+            
+            const expiresDisplayElement = document.getElementById('expires-display');
+            if (!expiresDisplayElement) return;
+            
+            if (diff <= 0) {
+                expiresDisplayElement.title = 'Expired';
+                expiresDisplayElement.style.color = '#f38ba8'; // Red color
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            let timeString = '';
+            if (days > 0) {
+                timeString += `${days} day${days > 1 ? 's' : ''} `;
+            }
+            if (hours > 0) {
+                timeString += `${hours}h `;
+            }
+            if (minutes > 0 || (hours > 0 && days === 0)) {
+                timeString += `${minutes}m `;
+            }
+            if (days === 0 && hours === 0 && minutes < 10) {
+                timeString += `${seconds}s`;
+            }
+            
+            expiresDisplayElement.title = `${timeString.trim()} remaining`;
+            <% } %>
+        }
+        
+        // Update expires in countdown every second
+        <% if (file.expires_at) { %>
+        updateExpiresIn();
+        setInterval(updateExpiresIn, 1000);
+        <% } %>
 
         </script>
     </div>

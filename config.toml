@@ -1,17 +1,18 @@
-# SplatBin Configuration
+# splatbin config
 
 [expiry]
-# Maximum time a file can be uploaded for (in hours)
+# max upload lifetime (in hours)
 # -1 = infinity (no expiration limit)
 # 168 = 1 week (default)
-max_hours = 162
+max_hours = -1
+
+# allow files to last for ever
+allow_everlasting = true
 
 [upload]
-# Maximum file size in MB
+# max upload size in mb
 max_size_mb = 100
 
 [server]
-# Port to run on
 port = 3000
-# Server URL (used in examples and responses)
 url = "https://your-domain.com"

@@ -2,12 +2,13 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 // Generate shorter, readable IDs (8 characters)
 function generateShortId() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
-  for (let i = 0; i < 8; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let i = 0; i < 6; i++) {
+    result += crypto.randomBytes(1).toString('hex');
   }
   return result;
 }
@@ -22,7 +23,7 @@ try {
 } catch (err) {
   console.error('Error loading config.toml:', err.message);
   config = {
-    expiry: { max_hours: 162 },
+    expiry: { max_hours: 162, allow_everlasting: true },
     upload: { max_size_mb: 100 },
     server: { port: 3000, url: "https://your-domain.com" }
   };
@@ -124,6 +125,23 @@ function parseExpirationHours(hoursInput) {
   const hours = parseInt(hoursInput);
   if (isNaN(hours) || hours <= 0) return null;
   
+  // Check for everlasting files (special value -1 or 0)
+  if ((hours === -1 || hours === 0) && config.expiry.allow_everlasting) {
+    return null; // null means never expires
+  }
+  
+  // If everlasting not allowed but user tried to set it, use max_hours instead
+  if ((hours === -1 || hours === 0) && !config.expiry.allow_everlasting) {
+    if (config.expiry.max_hours === -1) {
+      return null; // Admin allows infinite, so allow it
+    }
+    // Use max_hours as fallback
+    const actualHours = config.expiry.max_hours;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + (actualHours * 60 * 60 * 1000));
+    return expiresAt.toISOString();
+  }
+  
   // Respect max hours config
   const actualHours = config.expiry.max_hours === -1 ? hours : Math.min(hours, config.expiry.max_hours);
   
@@ -137,6 +155,11 @@ function isExpired(expiresAt) {
   if (!expiresAt) return false;
   return new Date(expiresAt) <= new Date();
 }
+
+app.get('/favicon.png', (req, res) => {
+  res.sendFile(path.join(__dirname, '', 'favicon.png'));
+});
+
 
 // Routes
 app.get('/', (req, res) => {
@@ -203,7 +226,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 
 // Web form upload
 app.post('/upload', upload.single('file'), (req, res) => {
-  const textContent = req.body.text_content?.trim();
+  const textContent = req.body.text_content;
   const customName = req.body.custom_name?.trim();
   
   // Handle expiration
@@ -213,7 +236,7 @@ app.post('/upload', upload.single('file'), (req, res) => {
   }
   
   // Handle text content uploads (if text is provided)
-  if (textContent) {
+  if (textContent && textContent.trim().length > 0) {
     const filename = customName || 'paste.txt';
     const id = generateShortId();
     const ext = path.extname(filename) || '.txt';
@@ -236,7 +259,6 @@ app.post('/upload', upload.single('file'), (req, res) => {
       Buffer.byteLength(textContent, 'utf8'),
       'text/plain',
       1, // is_text
-      0, // is_previewable
       expiresAt
     ], function(err) {
       if (err) {
@@ -339,6 +361,7 @@ app.get('/f/:id', (req, res) => {
     }
   });
 });
+
 
 app.get('/raw/:id', (req, res) => {
   const id = req.params.id;
