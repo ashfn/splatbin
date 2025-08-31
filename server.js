@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const cron = require('node-cron');
 // Generate shorter, readable IDs (8 characters)
 function generateShortId() {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -154,6 +155,57 @@ function parseExpirationHours(hoursInput) {
 function isExpired(expiresAt) {
   if (!expiresAt) return false;
   return new Date(expiresAt) <= new Date();
+}
+
+// Cleanup function to remove expired files
+function cleanupExpiredFiles() {
+  console.log('Starting cleanup of expired files...');
+  
+  // Find all expired files
+  db.all('SELECT * FROM uploads WHERE expires_at IS NOT NULL AND expires_at <= datetime("now")', [], (err, rows) => {
+    if (err) {
+      console.error('Error querying expired files:', err);
+      return;
+    }
+    
+    if (rows.length === 0) {
+      console.log('No expired files found');
+      return;
+    }
+    
+    console.log(`Found ${rows.length} expired files to clean up`);
+    let deletedFiles = 0;
+    let deletedRecords = 0;
+    
+    rows.forEach(row => {
+      // Delete physical file
+      const filePath = path.join(uploadsDir, row.filename);
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+          deletedFiles++;
+          console.log(`Deleted file: ${row.filename}`);
+        }
+      } catch (fileErr) {
+        console.error(`Error deleting file ${row.filename}:`, fileErr);
+      }
+      
+      // Delete database record
+      db.run('DELETE FROM uploads WHERE id = ?', [row.id], function(dbErr) {
+        if (dbErr) {
+          console.error(`Error deleting record ${row.id}:`, dbErr);
+        } else {
+          deletedRecords++;
+          console.log(`Deleted record: ${row.id}`);
+        }
+        
+        // Log summary when all deletions are processed
+        if (deletedRecords + (rows.length - deletedRecords) === rows.length) {
+          console.log(`Cleanup completed: ${deletedFiles} files and ${deletedRecords} records deleted`);
+        }
+      });
+    });
+  });
 }
 
 app.get('/favicon.png', (req, res) => {
@@ -419,6 +471,8 @@ app.get('/download/:id', (req, res) => {
   });
 });
 
+
+
 // Error handling
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -431,6 +485,19 @@ app.use((error, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`SplatBin running on http://localhost:${PORT}`);
+  
+  // Start cleanup cron job - runs every 5 minutes
+  cron.schedule('*/5 * * * *', () => {
+    cleanupExpiredFiles();
+  });
+  
+  console.log('Cleanup cron job scheduled to run every 5 minutes');
+  
+  // Run initial cleanup on startup
+  setTimeout(() => {
+    console.log('Running initial cleanup...');
+    cleanupExpiredFiles();
+  }, 5000); // Wait 5 seconds after startup
 });
 
 // Graceful shutdown
