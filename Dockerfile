@@ -3,11 +3,17 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Install build dependencies for native modules (sqlite3)
+RUN apk add --no-cache python3 make g++ sqlite-dev
+
 # Copy package files
 COPY package*.json ./
 
 # Install dependencies with better error handling and compatibility
 RUN npm ci --omit=dev --no-audit --no-fund
+
+# Clean up build dependencies to reduce image size
+RUN apk del python3 make g++
 
 # Create uploads directory
 RUN mkdir -p uploads
