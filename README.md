@@ -1,6 +1,6 @@
 # splatbin
 
-A minimal, terminal-first file sharing service with a dark purple theme.
+A minimal, file sharing/paste service
 
 ### Run with Docker
 
