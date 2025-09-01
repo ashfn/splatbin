@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/png" href="/logo.png">
     <title>splatbin</title>
     <style>
         body {
@@ -20,19 +20,25 @@
         .header {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 8px;
             margin-bottom: 20px;
         }
         .logo {
             width: 48px;
             height: 48px;
             object-fit: contain;
+            vertical-align: middle;
+            display: block;
+            margin-top: 2px;
         }
         .logo-text {
             font-size: 32px;
             font-weight: 600;
             color: #cba6f7;
             margin: 0;
+            line-height: 1;
+            display: flex;
+            align-items: center;
         }
         .container {
             background: #111111;
@@ -131,7 +137,7 @@
         .bottom-row {
             display: flex;
             gap: 20px;
-            align-items: end;
+            align-items: stretch; /* Make both elements same height */
         }
         .attachment-area {
             flex: 1;
@@ -154,7 +160,7 @@
         .file-display {
             border: 2px dashed #444444;
             border-radius: 8px;
-            padding: 20px;
+            padding: 12px 20px;
             text-align: center;
             background: #000000;
             cursor: pointer;
@@ -163,6 +169,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 62px; /* Exact height to match save button */
+            box-sizing: border-box;
         }
         .file-display:hover {
             border-color: #cba6f7;
@@ -235,11 +243,9 @@
         @media (max-width: 768px) {
             .bottom-row {
                 gap: 15px;
-                align-items: stretch; /* Make both elements same height */
             }
             .file-display {
-                padding: 15px;
-                min-height: 62px; /* Match save button height */
+                padding: 10px 15px;
             }
             .save-btn {
                 min-width: 100px;
