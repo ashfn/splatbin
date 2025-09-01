@@ -208,8 +208,8 @@ function cleanupExpiredFiles() {
   });
 }
 
-app.get('/favicon.png', (req, res) => {
-  res.sendFile(path.join(__dirname, '', 'favicon.png'));
+app.get('/logo.png', (req, res) => {
+  res.sendFile(path.join(__dirname, '', 'logo.png'));
 });
 
 
