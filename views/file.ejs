@@ -300,7 +300,7 @@
         <div class="download-commands">
             <h3>Download Command</h3>
             <div class="command-group">
-                <pre><code>curl -O <%= req ? `${req.protocol}://${req.get('host')}` : '' %>/download/<%= id %></code></pre>
+                <pre><code>curl -L -O -J <%= req ? `${req.protocol}://${req.get('host')}` : '' %>/download/<%= id %></code></pre>
             </div>
         </div>
         

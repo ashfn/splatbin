@@ -244,6 +244,12 @@
             display: flex;
             position: relative;
         }
+        .content-wrapper::selection {
+            background: rgba(203, 166, 247, 0.3);
+        }
+        .content-wrapper::-moz-selection {
+            background: rgba(203, 166, 247, 0.3);
+        }
         .content-lines {
             flex: 1;
             overflow-x: auto;
@@ -303,6 +309,10 @@
             font-size: 14px;
             line-height: 1.5;
             user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            pointer-events: none;
             padding-top: 0;
             align-self: stretch;
             display: flex;
@@ -317,6 +327,10 @@
             margin: 0;
             padding: 0 20px;
             flex: 1;
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
         }
         .line-container .content-line:empty::before {
             content: " ";
@@ -435,7 +449,7 @@
         <div class="download-commands">
             <h3>Download Command</h3>
             <div class="command-group">
-                <pre><code>curl -O <%= req ? `${req.protocol}://${req.get('host')}` : '' %>/download/<%= id %></code></pre>
+                <pre><code>curl -L -O -J <%= req ? `${req.protocol}://${req.get('host')}` : '' %>/download/<%= id %></code></pre>
             </div>
         </div>
     </div>
@@ -500,38 +514,66 @@
         <% } %>
         
         function copyTextContent() {
-            // Get the raw text content from the content-lines div
+            // Get the raw text content from the content-lines div, excluding line numbers
             const contentLines = document.querySelectorAll('.content-line');
-            const textContent = Array.from(contentLines).map(line => line.textContent || line.innerText).join('\n');
+            let textContent = '';
             
-            navigator.clipboard.writeText(textContent).then(() => {
-                const btn = document.getElementById('copy-text-btn');
+            // Extract text content more carefully to avoid any line number contamination
+            for (let i = 0; i < contentLines.length; i++) {
+                const line = contentLines[i];
+                // Use textContent to get clean text without HTML
+                const lineText = line.textContent || line.innerText || '';
+                textContent += lineText;
+                // Add newline except for the last line
+                if (i < contentLines.length - 1) {
+                    textContent += '\n';
+                }
+            }
+            
+            const showFeedback = (btn, success = true) => {
                 const originalText = btn.textContent;
-                btn.textContent = 'Copied!';
-                btn.style.background = '#f5c2e7';
+                btn.textContent = success ? 'Copied!' : 'Failed!';
+                btn.style.background = success ? '#f5c2e7' : '#f38ba8';
                 setTimeout(() => {
                     btn.textContent = originalText;
                     btn.style.background = '#cba6f7';
                 }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy text: ', err);
-                // Fallback for older browsers
-                const textArea = document.createElement('textarea');
-                textArea.value = textContent;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                
-                const btn = document.getElementById('copy-text-btn');
-                const originalText = btn.textContent;
-                btn.textContent = 'Copied!';
-                btn.style.background = '#f5c2e7';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = '#cba6f7';
-                }, 2000);
-            });
+            };
+            
+            const btn = document.getElementById('copy-text-btn');
+            
+            // Try modern clipboard API first
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textContent).then(() => {
+                    showFeedback(btn, true);
+                }).catch(err => {
+                    console.error('Clipboard API failed: ', err);
+                    // Fallback to legacy method
+                    fallbackCopy(textContent, btn);
+                });
+            } else {
+                // Direct fallback for browsers without clipboard API
+                fallbackCopy(textContent, btn);
+            }
+            
+            function fallbackCopy(text, btn) {
+                try {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showFeedback(btn, successful);
+                } catch (err) {
+                    console.error('Fallback copy failed: ', err);
+                    showFeedback(btn, false);
+                }
+            }
         }
     </script>
 </body>
