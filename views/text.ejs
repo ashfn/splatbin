@@ -309,6 +309,23 @@
         .line-container:last-child {
             padding-bottom: 20px;
         }
+        /* Ensure line number background extends through padding on first/last lines */
+        .line-container:first-child.narrow,
+        .line-container:last-child.narrow {
+            background: linear-gradient(to right, #222222 33px, #000000 33px);
+        }
+        .line-container:first-child.medium,
+        .line-container:last-child.medium {
+            background: linear-gradient(to right, #222222 44px, #000000 44px);
+        }
+        .line-container:first-child.wide,
+        .line-container:last-child.wide {
+            background: linear-gradient(to right, #222222 58px, #000000 58px);
+        }
+        .line-container:first-child.extra-wide,
+        .line-container:last-child.extra-wide {
+            background: linear-gradient(to right, #222222 72px, #000000 72px);
+        }
         .line-container .line-number {
             flex-shrink: 0;
             text-align: right;
